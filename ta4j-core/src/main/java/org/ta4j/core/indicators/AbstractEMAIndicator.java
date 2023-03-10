@@ -24,6 +24,7 @@
 package org.ta4j.core.indicators;
 
 import org.ta4j.core.Indicator;
+import org.ta4j.core.num.NaN;
 import org.ta4j.core.num.Num;
 
 /**
@@ -35,20 +36,39 @@ public abstract class AbstractEMAIndicator extends RecursiveCachedIndicator<Num>
     private final int barCount;
     private final Num multiplier;
 
+    private final SMAIndicator smaIndicator;
+
+    private int firstBarCountWithValue;
+
     protected AbstractEMAIndicator(Indicator<Num> indicator, int barCount, double multiplier) {
         super(indicator);
         this.indicator = indicator;
         this.barCount = barCount;
         this.multiplier = numOf(multiplier);
+        this.smaIndicator = new SMAIndicator(indicator, barCount);
+        int first = 0;
+        for (int i = 0; i < indicator.getBarSeries().getBarCount(); i++) {
+            if (!indicator.getValue(i).isNaN()) {
+                first = i;
+                break;
+            }
+        }
+        firstBarCountWithValue = first;
     }
 
     @Override
     protected Num calculate(int index) {
-        if (index == 0) {
-            return indicator.getValue(0);
+        if (index < getBarCount()-1+firstBarCountWithValue) {
+            return NaN.NaN;
         }
-        Num prevValue = getValue(index - 1);
-        return indicator.getValue(index).minus(prevValue).multipliedBy(multiplier).plus(prevValue);
+        else if (index == getBarCount()-1+firstBarCountWithValue) {
+            return smaIndicator.getValue(index);
+        }
+        else {
+            Num prevValue = getValue(index - 1);
+            return indicator.getValue(index).minus(prevValue).multipliedBy(multiplier).plus(prevValue);
+
+        }
     }
 
     @Override
