@@ -45,8 +45,8 @@ public class BarSeriesManager {
     private final BarSeries barSeries;
 
     /** The trading cost models */
-    private CostModel transactionCostModel;
-    private CostModel holdingCostModel;
+    protected CostModel transactionCostModel;
+    protected CostModel holdingCostModel;
 
     /**
      * Constructor.
